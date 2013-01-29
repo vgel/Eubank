@@ -1,0 +1,33 @@
+Jeopardy questions can usually be broken down into simply their nouns and important phrases.
+
+    All Rebecca De Mornay wants to do is get into Princeton but she must deal with prostitute Tom Cruise (This was a role-reversal question)
+
+Can become
+
+    Rebecca De Mornay Princeton prostitute Tom Cruise
+
+Putting this into google, taking the shortform summary straight from the search page, and running it through collections.Counter gets:
+
+    'Tom': 10
+    'Rebecca': 10
+    'De': 9
+    'a': 9
+    'Cruise': 6
+    'by': 5
+    'and': 5
+    'in': 5
+    'Risky': 4
+    ... lots more
+
+The word we're looking for is Risky, however at first it seems like we've failed. However, of the 8 preceding words, 'Tom', 'Rebecca', 'De', and 'Cruise' are in the question, so are unlikely to be the answer, and 'a', 'by', 'and', and 'in' are all common English words. That leaves us with Risky, which still isn't the full answer (Risky Business). However, if we search for the word Risky in the blob of text we pulled from Google, it is always followed by the capitalized word Business, so they are likely related.
+
+Therefore, our full algorithm for trying to answer Jepoardy questions with Google is:
+    
+1. Break the question down into important nouns/phrases (keeping phrases within quotes)
+2. Search google with that phrase and collect Google summaries
+3. Clean up summaries (remove punctuation, html tags, ...s, compress whitespace), keeping phrases together
+4. Remove words that are in the question or that are common english words
+5. Count word/phrase frequencies
+6. Word with highest frequency is the 'key' word
+7. Try to find words commonly paired with the key (front and back), and add them to the answer
+8. Add What is to the front (maybe try and use correct what/who/where/when)
