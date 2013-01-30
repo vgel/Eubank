@@ -91,9 +91,9 @@ def is_same_word(word1, word2, first_try=True):
         return True
     if word1[-1] == 's' and re.sub('[^a-zA-Z0-9]', '', word1[:-1]).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # plurals and 's
         return True
-    if word1.split('\'')[0].lower() == word2.lower():
+    if '\'' in word1 and nltk.word_tokenize(word1)[0] == word2: #contractions don't == do
         return True
-    if re.sub('[^a-zA-Z0-9]', '', word1).lower() == word2.lower():  # runner-up == runnerup
+    if re.sub('[^a-zA-Z0-9]', '', word1).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # runner-up == runnerup
         return True
     if first_try:
         return is_same_word(word2, word1, False)
@@ -106,7 +106,7 @@ def remove_from_count(x, cnt):
             remove_from_count(x1, cnt)
     else:
         for key in cnt.keys():
-            if is_same_word(x, key):
+            if is_same_word(x, key) and x not in common_english:
                 cnt.pop(key)
     return cnt
 
@@ -120,9 +120,7 @@ def blob_google(html, question):
     for x in common_english:
         if x in cnt:
             cnt.pop(x)
-    for x in Phrase(None, question).bare_words():
-        print 'remove', x
-        remove_from_count(x, cnt)
+    remove_from_count(Phrase(None, question).bare_words())
     for x in cnt.keys():
         if nltk.pos_tag([x])[0][1] not in allow_important:
             cnt.pop(x)
