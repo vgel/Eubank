@@ -77,7 +77,7 @@ def make_google_url(q):
     s = ''
     for w in q:
         if type(w) is Phrase:
-            s += '"' + w.escape() + '"'
+            s += '"' + w.escape() + '"+'
         else:
             s += w + '+'
     print 'search =', s
