@@ -104,6 +104,9 @@ def remove_from_count(x, cnt):
     if type(x) is Phrase:
         for x1 in x.bare_words():
             remove_from_count(x1, cnt)
+    elif type(x) is list:
+        for x1 in x:
+            remove_from_count(x1, cnt)
     else:
         for key in cnt.keys():
             if is_same_word(x, key) and x not in common_english:
@@ -120,7 +123,7 @@ def blob_google(html, question):
     for x in common_english:
         if x in cnt:
             cnt.pop(x)
-    remove_from_count(Phrase(None, question).bare_words())
+    remove_from_count(Phrase(None, question).bare_words(), cnt)
     for x in cnt.keys():
         if nltk.pos_tag([x])[0][1] not in allow_important:
             cnt.pop(x)
@@ -166,7 +169,7 @@ def google_it(question):
     key_word = cnt.most_common()[0][0]
     before = find_related_words(-1, key_word, blob)
     after = find_related_words(1, key_word, blob)
-    return 'what is ' + ' '.join(before) + ' ' + key_word + ' ' + ' '.join(after) + '?'
+    return 'what is ' + ' '.join(before).strip() + ' ' + key_word + ' ' + ' '.join(after).strip() + '?'
 
 while True:
     print 'que?>',
