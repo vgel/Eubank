@@ -23,8 +23,7 @@ class Phrase(object):
         #problems:
         #   Contractions (eg don't) get split into do and n't. We stick those back together.
         #   Embedded phrases get split into `` PHRASE ''. We'll turn those into child Phrase instances instead.
-        token_generator = itertools.chain(
-            toks, itertools.repeat(None))  # toks, EOF
+        token_generator = itertools.chain(toks, itertools.repeat(None))  # toks, EOF
         fixed_toks = []
         while True:
             tok = token_generator.next()
@@ -41,8 +40,7 @@ class Phrase(object):
                         break
                     phrase.append(tok1)
             elif '\'' in tok[0]:
-                fixed_toks[-1] = (fixed_toks[-1][0] + tok[
-                                  0], fixed_toks[-1][1])  # contraction
+                fixed_toks[-1] = (fixed_toks[-1][0] + tok[0], fixed_toks[-1][1])  # contraction
             else:
                 fixed_toks.append(tok)
         return fixed_toks
@@ -60,7 +58,7 @@ class Phrase(object):
         return map(lambda t: t if type(t) is Phrase else t[0], self.words)
 
     def __str__(self):
-        return 'PHRASE = "' + ', '.join(map(str, self.words)) + '"'
+        return 'PHRASE = (' + ', '.join(map(str, self.words)) + ')'
 
     def __repr__(self):
         return self.__str__()
@@ -91,7 +89,7 @@ def is_same_word(word1, word2, first_try=True):
         return True
     if word1[-1] == 's' and re.sub('[^a-zA-Z0-9]', '', word1[:-1]).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # plurals and 's
         return True
-    if '\'' in word1 and nltk.word_tokenize(word1)[0] == word2: #contractions don't == do
+    if '\'' in word1 and nltk.word_tokenize(word1)[0] == word2:  # contractions don't == do
         return True
     if re.sub('[^a-zA-Z0-9]', '', word1).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # runner-up == runnerup
         return True
