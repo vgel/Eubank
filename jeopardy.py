@@ -75,27 +75,39 @@ def important_words(question):
     p = filter(lambda word: type(word) is Phrase or word[1] in allow_important, phrasify(question).words)
     return map(lambda t: t if type(t) is Phrase else t[0], p)
 
+def is_likely_url(word):
+    for x in ['.com', '.net', '.org', '.gov', '.mil']:
+        if word.endswith(x):
+            return x
+    return None
 
-def make_google_url(q):
+
+def make_google_url(question):
     s = ''
-    for w in q:
+    for w in question:
         if type(w) is Phrase:
             s += '"' + w.escape() + '"+'
         else:
-            s += w + '+'
+            tld = is_likely_url(w) #get rid of tlds because it's all spammy SEO/whois services
+            if tld:
+                s += w[:-len(tld)] + '+'
+            else:
+                s += w + '+'
     print 'search =', s
     return 'http://www.google.com/search?q=' + s
 
+def normalize(word):
+    return re.sub('[^a-z0-9]', '', word.lower())
 
 def is_same_word(word1, word2, first_try=True):
-    if word1.lower() == word2.lower():
+    if normalize(word1) == normalize(word2):
         return True
-    if word1[-1] == 's' and re.sub('[^a-zA-Z0-9]', '', word1[:-1]).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # plurals and 's
+    if word1[-1] == 's' and normalize(word1[:-1]) == normalize(word2):  # plurals and 's
         return True
-    if '\'' in word1 and nltk.word_tokenize(word1)[0] == word2:  # contractions don't == do
+    if normalize(word1).startswith(normalize(word2)): #jews == jewish
         return True
-    if re.sub('[^a-zA-Z0-9]', '', word1).lower() == re.sub('[^a-zA-Z0-9]', '', word2).lower():  # runner-up == runnerup
-        return True
+    #if '\'' in word1 and nltk.word_tokenize(normalize(word1))[0] == normalize(word2):  # contractions don't == do
+    #    return True
     if first_try:
         return is_same_word(word2, word1, False)
     return False
