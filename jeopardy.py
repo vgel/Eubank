@@ -18,7 +18,7 @@ class Phrase(object):
 
     def tokenize(self, sentence):
         toks = sentence
-        if type(sentence) == str:
+        if isinstance(sentence, basestring):
             toks = nltk.pos_tag(nltk.word_tokenize(sentence))  # do the inital pre-processing with nltk, but it has problems we need to fix.
         #print toks
         #problems:
