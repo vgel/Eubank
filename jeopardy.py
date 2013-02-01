@@ -15,6 +15,7 @@ class Phrase(object):
     def __init__(self, parent, sentence):
         self.parent = parent
         self.words = self.tokenize(sentence)
+        self._bare_words = None
 
     def tokenize(self, sentence):
         toks = sentence
@@ -55,7 +56,9 @@ class Phrase(object):
         return s[0:-1]
 
     def bare_words(self):
-        return map(lambda t: t if type(t) is Phrase else t[0], self.words)
+        if not self._bare_words:
+            self._bare_words = map(lambda t: t if type(t) is Phrase else t[0], self.words)
+        return self._bare_words
 
     def __str__(self):
         return 'PHRASE = (' + ', '.join(map(str, self.words)) + ')'
