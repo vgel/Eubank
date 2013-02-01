@@ -6,7 +6,8 @@ import re
 import collections
 import itertools
 
-allow_important = ['NN', 'NNP', 'NNS', 'NNPS', 'CD', 'FW', 'JJ', 'IN']  # IN = preposition, since nltk has problems tagging things as IN (eg graphite). the common_words filter should keep out actual prepositions
+most_important = ['NN', 'NNP', 'NNS', 'NNPS', 'CD', 'FW']
+allow_important = most_important + ['JJ', 'IN']  # IN = preposition, since nltk has problems tagging things as IN (eg graphite). the common_words filter should keep out actual prepositions
 common_english = open('common-english-words').read().split()
 
 
