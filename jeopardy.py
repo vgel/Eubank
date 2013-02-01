@@ -20,7 +20,6 @@ class Phrase(object):
         toks = sentence
         if isinstance(sentence, basestring):
             toks = nltk.pos_tag(nltk.word_tokenize(sentence))  # do the inital pre-processing with nltk, but it has problems we need to fix.
-        #print toks
         #problems:
         #   Contractions (eg don't) get split into do and n't. We stick those back together.
         #   Embedded phrases get split into `` PHRASE ''. We'll turn those into child Phrase instances instead.
