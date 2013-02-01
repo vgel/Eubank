@@ -129,14 +129,12 @@ def remove_from_count(x, cnt):
 
 def blob_google(html, question):
     sts = map(lambda span: span.get_text(), html.find_all('span', 'st'))
-    sts_blob = ' '.join(sts).lower()
-    sts_blob = re.sub('[^\sa-z0-9]', '', sts_blob)
+    sts_blob = re.sub('[^\sa-zA-Z0-9]', '', ' '.join(sts))
     cnt = collections.Counter(sts_blob.split())
-    print sts_blob
     for x in common_english:
         if x in cnt:
             cnt.pop(x)
-    remove_from_count(Phrase(None, question).bare_words(), cnt)
+    remove_from_count(question.bare_words(), cnt)
     for x in cnt.keys():
         if nltk.pos_tag([x])[0][1] not in allow_important:
             cnt.pop(x)
