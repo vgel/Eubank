@@ -145,42 +145,63 @@ def blob_google(html, question):
 def find_all_single(element, li):
     return [i for i, x in enumerate(li) if x == element]
 
-
-def find_all_sublist(elements, li):
-    return [i for i in range(len(li)) if li[i:i + len(elements)] == elements]
-
-
 def find_related_words(dr, key, blob):
-    blob = blob.split()
-    positions = find_all_single(key, blob)
+    #blob = blob.split()
+    blob = phrasify(blob)
+    positions = sorted(find_all_single(key, blob.bare_words()))
 
     i = 0
 
     def slice_blob(pos):
         if dr < 0:
-            return tuple(blob[pos - i:pos])
+            return tuple(blob.bare_words()[pos - i:pos])
         else:
-            return tuple(blob[pos + 1:pos + i])
+            return tuple(blob.bare_words()[pos + 1:pos + i])
+    possible = []
     while True:
         cnt = collections.Counter(map(slice_blob, positions))
-        if cnt.most_common()[0][1] / float(sum(cnt.values())) > .5:  # more than half one phrase
+        if (positions[0] - i >= 0 if dr < 0 else positions[-1] + i <= len(blob.bare_words())) and cnt.most_common()[0][1] / float(sum(cnt.values())) > .3:  # stop at some point...
+            print i, cnt.most_common()[0][1] / float(sum(cnt.values())), len(blob.bare_words())
+            possible.extend(map(slice_blob, positions))
             i += 1  # try more words
         else:
             i -= 1  # current i didn't meet threshold, decrement it
-            cnt = collections.Counter(map(slice_blob, positions))
-            return list(cnt.most_common()[0][0])  # take most common value, turn from tuple -> list
+            possible.extend(map(slice_blob, positions))
+            print possible
+            possible = filter(lambda t: len(t) > 0, possible)
+            if len(possible) == 0:
+                return []
+            cnt = collections.Counter(possible)
+
+            total = float(sum(cnt.values()))
+            def score(key):
+                return cnt[key] / total / (1 + 0.05 * len(key))  #start out with frequency, decrement for length (since answers are rarely long)
+            return list(sorted(possible, key=score)[-1]) #sort by score, return one with greatest score
+
+def find_key_word(cnt):
+    if len(cnt) == 0:
+        return None
+    total = float(sum(cnt.values()))
+    def score(key):
+        score = cnt[key] / total
+        if nltk.pos_tag([key]) not in most_important:
+            score *= 0.9 #disfavor non-nouns
+        score *= (1 + 0.01 * len(key)) #slightly favor longer words
+        return score
+    return sorted(cnt.keys(), key=score)[-1]
 
 
 def google_it(question):
-    html = BeautifulSoup(
-        requests.get(make_google_url(important_words(question))).text)
-    cnt, blob = blob_google(html, question)
+    html = BeautifulSoup(requests.get(make_google_url(important_words(question))).text)
+    cnt, blob = blob_google(html, phrasify(question))
+    print blob
     if len(cnt) == 0:
         raise Exception('Couldn\'t understand your sentence (blame nltk)')
-    key_word = cnt.most_common()[0][0]
+    #key_word = cnt.most_common()[0][0]
+    key_word = find_key_word(cnt)
     before = find_related_words(-1, key_word, blob)
     after = find_related_words(1, key_word, blob)
-    return 'what is ' + ' '.join(before).strip() + ' ' + key_word + ' ' + ' '.join(after).strip() + '?'
+    return 'what is ' + (' '.join(before) + ' ' + key_word + ' ' + ' '.join(after)).strip() + '?'
 
 while True:
     print 'que?>',
